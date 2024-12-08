@@ -4,49 +4,79 @@ import * as path from 'path';
 
 export function activate(context: vscode.ExtensionContext) {
 
-	// Destroyコマンドを登録
-	const disposable = vscode.commands.registerCommand('slotchmod-for-vscode.destroy', () => {
+	// slotchmodコマンドを登録
+	const disposable = vscode.commands.registerCommand(
+		'slotchmod-for-vscode.slotchmod',
+		async () => {
 
-		// WebViewを開く
-		const panel = vscode.window.createWebviewPanel(
-			'destroy',
-			'Destroy',
-			vscode.ViewColumn.One,
-			{
-				enableScripts: true
-			}
-		);
+			// ユーザーにディレクトリを選択させる
+			const uri = await vscode.window.showOpenDialog({
+				canSelectFolders: true,
+				canSelectFiles: true,
+				canSelectMany: false,
+				openLabel: 'Select Directory or File'
+			});
 
-		// WebViewに表示するHTMLを生成
-		panel.webview.html = getWebviewContent(panel.webview, context.extensionUri);
+			if (!uri) { return; }
 
-		// WebViewからのメッセージを受信
-		panel.webview.onDidReceiveMessage(
-			message => {
-				switch (message.command) {
-					case 'destroy':
-						// consoleのコマンドを実行する
-						const command = "echo 'バルス'";
+			const targetPath = uri[0].path;
 
-						// コマンドを実行
-						childProcess.exec(command, (error, stdout, stderr) => {
-							if (error) {
-								console.error(`exec error: ${error}`);
-								return;
-							}
-							if (stdout) {
-								console.log(`stdout: ${stdout}`);
-								return;
-							}
-						});
-						return;
+			// WebViewを開く
+			const panel = vscode.window.createWebviewPanel(
+				'slotchmod',
+				`🎰 ${uri[0].path}`,
+				vscode.ViewColumn.One,
+				{
+					enableScripts: true
 				}
-			},
-			undefined,
-			context.subscriptions
-		);
+			);
 
-	});
+			// WebViewに表示するHTMLを生成
+			panel.webview.html = getWebviewContent(panel.webview, context.extensionUri);
+
+			// WebViewがロードされた後にメッセージを送信
+			panel.webview.onDidReceiveMessage(
+				message => {
+					switch (message.command) {
+						case 'slotchmod':
+							const reelStates = message.payload.reelStates as number[];
+							const chmodPermissions = reelStates.join('');
+
+							// ゾロ目かどうかを判定
+							const isZorome = new Set(reelStates).size === 1;
+
+							// consoleのコマンドを実行する
+							const command = `chmod ${chmodPermissions} ${targetPath}`;
+
+							// コマンドを実行
+							childProcess.exec(command, (error, stdout, stderr) => {
+								// エラーが無ければ実行した事を通知
+								if (!error) {
+									if (isZorome) {
+										vscode.window.showInformationMessage(`🎉🎉🎉 おめでとう！！ ${command} を実行しました！！ 🎉🎉🎉`);
+									} else {
+										vscode.window.showInformationMessage(`${command} を実行しました`);
+									}
+								}
+								if (error) {
+									console.error(`exec error: ${error}`);
+									return;
+								}
+								if (stderr) {
+									console.log(`stdout: ${stderr}`);
+									return;
+								}
+							});
+							return;
+					}
+				},
+				undefined,
+				context.subscriptions
+			);
+
+			// WebViewにtargetPathを送信
+			panel.webview.postMessage({ command: 'setTargetPath', targetPath });
+		});
 
 	context.subscriptions.push(disposable);
 }
