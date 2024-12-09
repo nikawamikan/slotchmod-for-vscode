@@ -34,7 +34,7 @@ export function activate(context: vscode.ExtensionContext) {
 			// WebViewに表示するHTMLを生成
 			panel.webview.html = getWebviewContent(panel.webview, context.extensionUri);
 
-			// WebViewがロードされた後にメッセージを送信
+			// WebViewがメッセージを受信した時の処理
 			panel.webview.onDidReceiveMessage(
 				message => {
 					switch (message.command) {
@@ -45,7 +45,7 @@ export function activate(context: vscode.ExtensionContext) {
 							// ゾロ目かどうかを判定
 							const isZorome = new Set(reelStates).size === 1;
 
-							// consoleのコマンドを実行する
+							// consoleのコマンドを生成する
 							const command = `chmod ${chmodPermissions} ${targetPath}`;
 
 							// コマンドを実行
@@ -59,11 +59,8 @@ export function activate(context: vscode.ExtensionContext) {
 									}
 								}
 								if (error) {
+									vscode.window.showInformationMessage('エラーが発生しました');
 									console.error(`exec error: ${error}`);
-									return;
-								}
-								if (stderr) {
-									console.log(`stdout: ${stderr}`);
 									return;
 								}
 							});
