@@ -13,7 +13,7 @@ export function App() {
     const [allReelsStopped, setAllReelsStopped] = useState(false);
     const [isZorome, setIsZorome] = useState(false);
 
-    const getNowPermissions = () => {
+    const getPermissions = () => {
         return reelStates.map(x => x ?? "?").join("");
     }
 
@@ -60,7 +60,7 @@ export function App() {
         <div className={`flex flex-col items-center justify-center h-screen p-4 ${allReelsStopped ? (isZorome ? 'gaming-bg' : '') : ''}`}>
             <h1 className="text-2xl font-bold mb-4 text-center">SlotCHMOD</h1>
             <p className="mb-4 text-lg font-mono bg-gray-800 text-white p-2 rounded">
-                chmod {getNowPermissions()} {targetPath}
+                chmod {getPermissions()} {targetPath}
             </p>
             <div className="flex max-w-96 justify-around items-center mb-5 mt-5">
                 {Array.from({ length: REEL_COUNT }).map((_, i) => (
