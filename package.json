@@ -14,8 +14,8 @@
   "contributes": {
     "commands": [
       {
-        "command": "slotchmod-for-vscode.destroy",
-        "title": "Destroy"
+        "command": "slotchmod-for-vscode.slotchmod",
+        "title": "Slot chmod 🎰"
       }
     ]
   },

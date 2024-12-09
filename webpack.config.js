@@ -46,6 +46,10 @@ const baseConfig = {
       "process.env.NODE_ENV": JSON.stringify(process.env.NODE_ENV),
     }),
   ],
+  watchOptions: {
+    poll: 1000, // 1秒ごとにファイルの変更をチェック
+    aggregateTimeout: 300, // 変更後300ms待ってから再ビルド
+  },
 };
 
 /** @type WebpackConfig */
